@@ -1,5 +1,5 @@
 const { client } = require('./common');
-client.connect();
+// client.connect();
 
 const getAllCustomers = async () => {
     const SQL = `
@@ -17,17 +17,30 @@ const getAllCustomers = async () => {
     return response.rows;
   };
   
-//   const getReservation = async (id, name, newGenre) => {
-//     const SQL = `
-//       UPDATE movies_genre 
-//       set genre_id = (SELECT id from genres where type = $3)
-//       where genre_id = (SELECT id from genres where type = $2)
-//       AND movie_id = $1
-//       Returning *
-//   `;
-//     const response = await client.query(SQL, [id, oldGenre, newGenre]);
-//     console.log(response)
-//     return response.rows;
-//   };
+  const getAllReservations = async () => {
+    const SQL = `
+      SELECT * FROM reservations 
+  `;
+    const response = await client.query(SQL);
+    return response.rows;
+  };
+
+  const createReservation = async (date, party_count, restaurants_name, customers_name) => {
+    const SQL = `
+      INSERT INTO reservations(date, party_count, restaurants_id, customers_id) VALUES($1, $2, (SELECT id from restaurants where name = $3),
+                (SELECT id from customers where name = $4)) RETURNING *
+    `
+    const response = await client.query(SQL, [date, party_count, restaurants_name, customers_name]);
+    return response.rows;
+  };
+
+  const deleteReservation = async (id) => {
+    const SQL = `
+      DELETE FROM reservations WHERE id = $1
+    `;
+    const response = await client.query(SQL, [id]);
+    return response;
+  };
+
   
-  module.exports = { getAllCustomers, getAllRestaurants };
+  module.exports = { getAllCustomers, getAllRestaurants, getAllReservations, createReservation, deleteReservation };
